@@ -1,0 +1,27 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.cs]
+indent_size = 4
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+[*.{json,yaml,yml}]
+indent_size = 2
+
+[*.{bicep,bicepparam}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.sln]
+indent_style = tab

@@ -1,0 +1,24 @@
+{
+    "servers": {
+        "local-mcp-app": {
+            "url": "http://localhost:7071/runtime/webhooks/mcp",
+            "headers": {}
+        },
+        "remote-mcp-app": {
+          "type": "sse",
+          "url": "https://<function-app-name>.azurewebsites.net/runtime/webhooks/mcp/sse",
+          "headers": {
+            "x-functions-key": "<function-key>"
+          }
+        },
+        "remote-mcp-app-with-easyauth": {
+            "type": "sse",
+            "url": "https://<function-app-name>.azurewebsites.net/runtime/webhooks/mcp/sse",
+            "oauth": {
+              "authority": "https://login.microsoftonline.com/<AZURE_TENANT_ID>",
+              "clientId": "<ENTRA_APPLICATION_ID>",
+              "scopes": ["<ENTRA_IDENTIFIER_URI>/user_impersonation"]
+            }
+        }
+    }
+}

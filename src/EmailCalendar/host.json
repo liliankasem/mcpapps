@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      },
+      "enableLiveMetricsFilters": true
+    }
+  },
+  "extensions": {
+    "mcp": {
+      "system": {
+        "webhookAuthorizationLevel": "Anonymous"
+      },
+      "serverName": "Email & Calendar MCP Server",
+      "serverVersion": "1.0.0",
+      "instructions": "MCP server for managing email and calendar via Microsoft Graph. Supports sending/searching emails and listing/creating calendar events. Requires Entra ID app registration with appropriate Microsoft Graph application permissions."
+    }
+  }
+}

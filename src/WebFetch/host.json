@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      },
+      "enableLiveMetricsFilters": true
+    }
+  },
+  "extensions": {
+    "mcp": {
+      "system": {
+        "webhookAuthorizationLevel": "Anonymous"
+      },
+      "serverName": "Web Fetch MCP Server",
+      "serverVersion": "1.0.0",
+      "instructions": "MCP server for fetching web pages and converting them to markdown."
+    }
+  }
+}

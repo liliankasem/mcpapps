@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      },
+      "enableLiveMetricsFilters": true
+    }
+  },
+  "extensions": {
+    "mcp": {
+      "system": {
+        "webhookAuthorizationLevel": "Anonymous"
+      },
+      "serverName": "Azure Blob Storage MCP Server",
+      "serverVersion": "1.0.0",
+      "instructions": "MCP server for Azure Blob Storage operations. Configure STORAGE_CONNECTION_STRING or STORAGE_ACCOUNT_NAME to connect to your storage account."
+    }
+  }
+}
