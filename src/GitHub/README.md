@@ -21,21 +21,20 @@ An MCP server built with Azure Functions (.NET 10) that provides GitHub tools wi
 - [Azure Functions Core Tools v4](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
 - [Node.js 18+](https://nodejs.org/) (for building the UI)
 - [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) (for deployment)
+- [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) (for local storage emulation)
 - A [GitHub Personal Access Token](https://github.com/settings/tokens) (for authenticated API access)
 
 ## Local Setup
 
-### 1. Build the UI
+### 1. Configure local settings
+
+Copy the sample settings file and add your secrets:
 
 ```bash
-cd app && npm install && npm run build && cd ..
+cp local.settings.sample.json local.settings.json
 ```
 
-This produces `app/dist/index.html`, which is bundled into the function output at build time.
-
-### 2. Configure local settings
-
-Edit `local.settings.json`:
+Then edit `local.settings.json` to add your GitHub token:
 
 ```json
 {
@@ -52,10 +51,20 @@ Edit `local.settings.json`:
 |---------|----------|-------------|
 | `GITHUB_TOKEN` | Recommended | GitHub PAT for authenticated API access. Without it, you'll be rate-limited to 60 requests/hour. |
 
+
+### 2. Start Azurite (for local storage emulation)
+
+```bash
+azurite --silent
+```
+
 ### 3. Build and run
 
 ```bash
-dotnet build
+# Build the UI widget (produces app/dist/index.html, bundled into function output at build time)
+cd app && npm install && npm run build && cd ..
+
+# Start the function app
 func start
 ```
 
@@ -88,6 +97,12 @@ azd up
 ```
 
 This provisions a Flex Consumption Function App with managed identity and deploys the app.
+
+To redeploy just the app code (without re-provisioning infrastructure):
+
+```bash
+azd deploy
+```
 
 To deploy with Easy Auth (Microsoft Entra ID), see [Optional Features](../../README.md#optional-features) in the root README.
 

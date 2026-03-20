@@ -15,39 +15,33 @@ An MCP server built with Azure Functions (.NET 10) that fetches web pages and ex
 - [Azure Functions Core Tools v4](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
 - [Node.js 18+](https://nodejs.org/) (for building the UI)
 - [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) (for deployment)
+- [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) (for local storage emulation)
 
 ## Local Setup
 
-### 1. Build the UI
+### 1. Configure local settings
+
+Copy the sample settings file:
 
 ```bash
-cd app
-npm install
-npm run build
-```
-
-This produces `app/dist/index.html`, which is bundled into the function output at build time.
-
-### 2. Configure local settings
-
-Edit `local.settings.json`:
-
-```json
-{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
-  }
-}
+cp local.settings.sample.json local.settings.json
 ```
 
 No additional configuration is needed — the app uses `HttpClient` to fetch URLs.
 
+### 2. Start Azurite (for local storage emulation)
+
+```bash
+azurite --silent
+```
+
 ### 3. Build and run
 
 ```bash
-dotnet build
+# Build the UI widget (produces app/dist/index.html, bundled into function output at build time)
+cd app && npm install && npm run build && cd ..
+
+# Start the function app
 func start
 ```
 
@@ -80,6 +74,12 @@ azd up
 ```
 
 This provisions a Flex Consumption Function App with managed identity and deploys the app.
+
+To redeploy just the app code (without re-provisioning infrastructure):
+
+```bash
+azd deploy
+```
 
 To deploy with Easy Auth (Microsoft Entra ID), see [Optional Features](../../README.md#optional-features) in the root README.
 

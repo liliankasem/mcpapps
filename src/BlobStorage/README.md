@@ -22,19 +22,15 @@ An MCP server built with Azure Functions (.NET 10) that provides Azure Blob Stor
 
 ## Local Setup
 
-### 1. Build the UI
+### 1. Configure local settings
+
+Copy the sample settings file:
 
 ```bash
-cd app
-npm install
-npm run build
+cp local.settings.sample.json local.settings.json
 ```
 
-This produces `app/dist/index.html`, which is bundled into the function output at build time.
-
-### 2. Configure local settings
-
-Edit `local.settings.json`:
+The default settings use Azurite for local storage emulation. To connect to an Azure Storage account instead, edit `local.settings.json`:
 
 ```json
 {
@@ -54,22 +50,26 @@ Edit `local.settings.json`:
 
 If neither is set, the app defaults to `UseDevelopmentStorage=true` (Azurite).
 
-### 3. Start Azurite (for local development)
+
+### 2. Start Azurite (for local storage emulation)
 
 ```bash
 azurite --silent
 ```
 
-### 4. Build and run
+### 3. Build and run
 
 ```bash
-dotnet build
+# Build the UI widget (produces app/dist/index.html, bundled into function output at build time)
+cd app && npm install && npm run build && cd ..
+
+# Start the function app
 func start
 ```
 
 The MCP server will be available at `http://localhost:7071`.
 
-### 5. Connect an MCP client
+### 4. Connect an MCP client
 
 Add the server to your MCP client configuration (e.g., VS Code `mcp.json`):
 
@@ -96,6 +96,12 @@ azd up
 ```
 
 This provisions a Flex Consumption Function App with managed identity and deploys the app.
+
+To redeploy just the app code (without re-provisioning infrastructure):
+
+```bash
+azd deploy
+```
 
 To deploy with Easy Auth (Microsoft Entra ID), see [Optional Features](../../README.md#optional-features) in the root README.
 

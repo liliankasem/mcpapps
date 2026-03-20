@@ -13,15 +13,39 @@ Azure Functions MCP server for email and calendar operations via Microsoft Graph
 
 ## Prerequisites
 
-### 1. Entra ID App Registration
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Azure Functions Core Tools v4](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
+- [Node.js 18+](https://nodejs.org/) (for building the UI)
+- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) (for deployment)
+- [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) (for local storage emulation)
 
-1. Go to [Azure Portal → Entra ID → App registrations](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps)
-2. Click **New registration**
-3. Name: `MCP Email Calendar App` (or your preference)
-4. Supported account types: **Single tenant**
-5. Click **Register**
+## Getting Started
 
-### 2. Configure API Permissions
+This app needs an Entra ID app registration with Microsoft Graph permissions. The recommended approach is to deploy the infrastructure first — this creates the app registration for you — then add Graph permissions to it.
+
+### 1. Deploy Infrastructure
+
+Deploy with Easy Auth enabled to have Bicep create the app registration automatically:
+
+```bash
+azd auth login
+azd env set EASY_AUTH_ENABLED true
+azd up
+```
+
+See [Optional Features](../../README.md#optional-features) in the root README for additional options (VNet, pre-authorized clients, etc.).
+
+To redeploy just the app code (without re-provisioning infrastructure):
+
+```bash
+azd deploy
+```
+
+> **Alternatively**, if you want to run locally without deploying, [create an app registration manually](#manual-app-registration) and skip to [Configure Environment Variables](#4-configure-environment-variables).
+
+### 2. Add Graph API Permissions
+
+Find your app registration in the [Azure Portal](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps) (or look up the client ID with `azd env get-value ENTRA_APPLICATION_ID`).
 
 In your app registration → **API permissions** → **Add a permission** → **Microsoft Graph** → **Application permissions**:
 
@@ -42,45 +66,7 @@ In your app registration → **Certificates & secrets** → **New client secret*
 
 ### 4. Configure Environment Variables
 
-Update `local.settings.json` with your values:
-
-```json
-{
-  "Values": {
-    "AZURE_TENANT_ID": "<your-tenant-id>",
-    "AZURE_CLIENT_ID": "<your-app-client-id>",
-    "AZURE_CLIENT_SECRET": "<your-client-secret-value>",
-    "TARGET_USER_EMAIL": "user@yourdomain.com"
-  }
-}
-```
-
-| Variable | Description |
-|---|---|
-| `AZURE_TENANT_ID` | Your Entra ID tenant ID |
-| `AZURE_CLIENT_ID` | The app registration's Application (client) ID |
-| `AZURE_CLIENT_SECRET` | The client secret value |
-| `TARGET_USER_EMAIL` | The mailbox to operate on (the user whose email/calendar is accessed) |
-
-## Running Locally
-
-```bash
-# Build the UI widget
-cd app && npm install && npm run build && cd ..
-
-# Start the function app
-func start
-```
-
-The MCP server will be available at `http://localhost:7071/runtime/webhooks/mcp`.
-
-## Deploying
-
-```bash
-azd up
-```
-
-After deployment, set the required app settings:
+Set the Graph API app settings on the deployed function app:
 
 ```bash
 az functionapp config appsettings set \
@@ -93,7 +79,12 @@ az functionapp config appsettings set \
     "TARGET_USER_EMAIL=user@yourdomain.com"
 ```
 
-To deploy with Easy Auth (Microsoft Entra ID), see [Optional Features](../../README.md#optional-features) in the root README.
+| Variable | Description |
+|---|---|
+| `AZURE_TENANT_ID` | Your Entra ID tenant ID |
+| `AZURE_CLIENT_ID` | The app registration's Application (client) ID |
+| `AZURE_CLIENT_SECRET` | The client secret value from step 3 |
+| `TARGET_USER_EMAIL` | The mailbox to operate on (the user whose email/calendar is accessed) |
 
 ### Connect to the deployed server
 
@@ -144,6 +135,56 @@ azd env get-value SERVICE_DEFAULT_HOSTNAME # Function app hostname
   }
 }
 ```
+
+## Running Locally
+
+You can also use the same app registration for local development. Copy the sample settings file and add your secrets:
+
+```bash
+cp local.settings.sample.json local.settings.json
+```
+
+Then edit `local.settings.json` to add your Graph API credentials:
+
+```json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "AZURE_TENANT_ID": "<your-tenant-id>",
+    "AZURE_CLIENT_ID": "<your-app-client-id>",
+    "AZURE_CLIENT_SECRET": "<your-client-secret-value>",
+    "TARGET_USER_EMAIL": "user@yourdomain.com"
+  }
+}
+```
+
+
+```bash
+# Start Azurite for local storage emulation
+azurite --silent &
+
+# Build the UI widget (produces app/dist/index.html, bundled into function output at build time)
+cd app && npm install && npm run build && cd ..
+
+# Start the function app
+func start
+```
+
+The MCP server will be available at `http://localhost:7071/runtime/webhooks/mcp`.
+
+## Manual App Registration
+
+If you prefer to run locally without deploying infrastructure first:
+
+1. Go to [Azure Portal → Entra ID → App registrations](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps)
+2. Click **New registration**
+3. Name: `MCP Email Calendar App` (or your preference)
+4. Supported account types: **Single tenant**
+5. Click **Register**
+
+Then continue from [Add Graph API Permissions](#2-add-graph-api-permissions) above.
 
 ## Architecture
 

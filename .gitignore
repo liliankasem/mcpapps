@@ -334,3 +334,6 @@ FodyWeavers.xsd
 
 # Azure Developer CLI
 .azure/
+
+# Azure Functions local settings (contains secrets)
+local.settings.json
