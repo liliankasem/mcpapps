@@ -7,7 +7,7 @@ using Microsoft.Graph.Models;
 using Microsoft.Graph.Users.Item.SendMail;
 using ModelContextProtocol.Protocol;
 
-public class EmailCalendarTools
+internal class EmailCalendarTools
 {
     private readonly GraphServiceClient _graph;
 
@@ -43,38 +43,35 @@ public class EmailCalendarTools
     [Function("send_email")]
     public async Task<CallToolResult> SendEmail(
         [McpToolTrigger("send_email", "Send an email via Microsoft Graph")]
-        [McpMetadata(ToolMetadata)] ToolInvocationContext context,
-        [McpToolProperty("to", "Recipient email address")] string to,
-        [McpToolProperty("subject", "Email subject")] string subject,
-        [McpToolProperty("body", "Email body (plain text)")] string body,
-        [McpToolProperty("cc", "CC recipient email address (optional)")] string? cc)
+        [McpMetadata(ToolMetadata)] SendEmailInput input,
+        ToolInvocationContext context)
     {
         var userId = GetTargetUser();
 
         var message = new Message
         {
-            Subject = subject,
+            Subject = input.Subject,
             Body = new ItemBody
             {
                 ContentType = BodyType.Text,
-                Content = body
+                Content = input.Body
             },
             ToRecipients =
             [
                 new Recipient
                 {
-                    EmailAddress = new EmailAddress { Address = to }
+                    EmailAddress = new EmailAddress { Address = input.To }
                 }
             ]
         };
 
-        if (!string.IsNullOrWhiteSpace(cc))
+        if (!string.IsNullOrWhiteSpace(input.Cc))
         {
             message.CcRecipients =
             [
                 new Recipient
                 {
-                    EmailAddress = new EmailAddress { Address = cc }
+                    EmailAddress = new EmailAddress { Address = input.Cc }
                 }
             ];
         }
@@ -85,8 +82,8 @@ public class EmailCalendarTools
             SaveToSentItems = true
         });
 
-        var result = new { to, subject, cc, status = "sent" };
-        var summary = $"Email sent to {to}: \"{subject}\"";
+        var result = new { to = input.To, subject = input.Subject, cc = input.Cc, status = "sent" };
+        var summary = $"Email sent to {input.To}: \"{input.Subject}\"";
         return WithStructuredContent(summary, result);
     }
 
@@ -162,51 +159,46 @@ public class EmailCalendarTools
     [Function("create_event")]
     public async Task<CallToolResult> CreateEvent(
         [McpToolTrigger("create_event", "Create a new calendar event")]
-        [McpMetadata(ToolMetadata)] ToolInvocationContext context,
-        [McpToolProperty("subject", "Event subject/title")] string subject,
-        [McpToolProperty("start", "Start date/time (ISO 8601, e.g. 2026-03-20T09:00:00)")] string start,
-        [McpToolProperty("end", "End date/time (ISO 8601, e.g. 2026-03-20T10:00:00)")] string end,
-        [McpToolProperty("body", "Event description (optional)")] string? body,
-        [McpToolProperty("attendees", "Comma-separated attendee email addresses (optional)")] string? attendees,
-        [McpToolProperty("location", "Event location (optional)")] string? location)
+        [McpMetadata(ToolMetadata)] CreateEventInput input,
+        ToolInvocationContext context)
     {
         var userId = GetTargetUser();
 
         var newEvent = new Event
         {
-            Subject = subject,
+            Subject = input.Subject,
             Start = new DateTimeTimeZone
             {
-                DateTime = start,
+                DateTime = input.Start,
                 TimeZone = "UTC"
             },
             End = new DateTimeTimeZone
             {
-                DateTime = end,
+                DateTime = input.End,
                 TimeZone = "UTC"
             }
         };
 
-        if (!string.IsNullOrWhiteSpace(body))
+        if (!string.IsNullOrWhiteSpace(input.Body))
         {
             newEvent.Body = new ItemBody
             {
                 ContentType = BodyType.Text,
-                Content = body
+                Content = input.Body
             };
         }
 
-        if (!string.IsNullOrWhiteSpace(location))
+        if (!string.IsNullOrWhiteSpace(input.Location))
         {
             newEvent.Location = new Location
             {
-                DisplayName = location
+                DisplayName = input.Location
             };
         }
 
-        if (!string.IsNullOrWhiteSpace(attendees))
+        if (!string.IsNullOrWhiteSpace(input.Attendees))
         {
-            newEvent.Attendees = attendees.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            newEvent.Attendees = input.Attendees.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(email => new Attendee
                 {
                     EmailAddress = new EmailAddress { Address = email },
@@ -225,7 +217,7 @@ public class EmailCalendarTools
             url = created?.WebLink
         };
 
-        var summary = $"Created event \"{subject}\" from {start} to {end}";
+        var summary = $"Created event \"{input.Subject}\" from {input.Start} to {input.End}";
         return WithStructuredContent(summary, result);
     }
 }

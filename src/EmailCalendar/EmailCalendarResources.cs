@@ -1,7 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
 
-public class EmailCalendarResources
+internal class EmailCalendarResources
 {
     private const string ResourceMetadata = """
         {

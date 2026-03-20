@@ -3,7 +3,7 @@ using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
 
 namespace WebFetch;
 
-public class WebFetchResources
+internal class WebFetchResources
 {
     private const string ResourceMetadata = """
         {

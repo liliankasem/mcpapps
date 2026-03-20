@@ -4,7 +4,7 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
 
-public class BlobStorageTools
+internal class BlobStorageTools
 {
     private readonly BlobServiceClient _blobServiceClient;
 

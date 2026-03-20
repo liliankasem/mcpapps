@@ -1,7 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
 
-public class GitHubResources
+internal class GitHubResources
 {
     private const string ResourceMetadata = """
         {

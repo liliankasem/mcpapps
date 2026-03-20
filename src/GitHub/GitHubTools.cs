@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Worker.Extensions.Mcp;
 using ModelContextProtocol.Protocol;
 using Octokit;
 
-public class GitHubTools
+internal class GitHubTools
 {
     private readonly IGitHubClient _github;
 
@@ -77,17 +77,14 @@ public class GitHubTools
     [Function("create_issue")]
     public async Task<CallToolResult> CreateIssue(
         [McpToolTrigger("create_issue", "Create a new issue in a GitHub repository")]
-        [McpMetadata(ToolMetadata)] ToolInvocationContext context,
-        [McpToolProperty("owner", "Repository owner")] string owner,
-        [McpToolProperty("repo", "Repository name")] string repo,
-        [McpToolProperty("title", "Issue title")] string title,
-        [McpToolProperty("body", "Issue body")] string body)
+        [McpMetadata(ToolMetadata)] CreateIssueInput input,
+        ToolInvocationContext context)
     {
-        var newIssue = new NewIssue(title) { Body = body };
-        var issue = await _github.Issue.Create(owner, repo, newIssue);
+        var newIssue = new NewIssue(input.Title) { Body = input.Body };
+        var issue = await _github.Issue.Create(input.Owner, input.Repo, newIssue);
 
         var result = new { number = issue.Number, url = issue.HtmlUrl };
-        var summary = $"Created issue #{issue.Number} in {owner}/{repo}: {issue.HtmlUrl}";
+        var summary = $"Created issue #{issue.Number} in {input.Owner}/{input.Repo}: {issue.HtmlUrl}";
         return WithStructuredContent(summary, result);
     }
 

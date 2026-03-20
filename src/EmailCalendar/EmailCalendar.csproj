@@ -3,7 +3,6 @@
   <PropertyGroup>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
-    <UserSecretsId>emailcalendar-mcp-app</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

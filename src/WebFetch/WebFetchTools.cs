@@ -5,7 +5,7 @@ using ReverseMarkdown;
 
 namespace WebFetch;
 
-public class WebFetchTools
+internal class WebFetchTools
 {
     private readonly IHttpClientFactory _httpClientFactory;
 

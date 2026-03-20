@@ -3,7 +3,6 @@
   <PropertyGroup>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
-    <UserSecretsId>41fafd86-14d9-4299-b8b2-a7db6cdeef99</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
