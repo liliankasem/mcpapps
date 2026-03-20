@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/AzureAIVision/AzureAIVision.csproj" />
     <Project Path="src/BlobStorage/BlobStorage.csproj" />
     <Project Path="src/EmailCalendar/EmailCalendar.csproj" />
     <Project Path="src/GitHub/GitHub.csproj" />

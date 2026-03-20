@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      },
+      "enableLiveMetricsFilters": true
+    }
+  },
+  "extensions": {
+    "mcp": {
+      "system": {
+        "webhookAuthorizationLevel": "Anonymous"
+      },
+      "serverName": "Azure AI Vision MCP Server",
+      "serverVersion": "1.0.0",
+      "instructions": "MCP server for Azure AI Vision. Analyze images, extract text with OCR, and generate descriptions. Configure VISION_ENDPOINT and optionally VISION_KEY to connect to your Azure AI Vision resource."
+    }
+  }
+}
