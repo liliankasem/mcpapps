@@ -10,10 +10,21 @@ An MCP server built with Azure Functions (.NET 10) that wraps [Azure AI Vision](
 | `read_text` | Extract text from an image using OCR (optical character recognition) |
 | `describe_image` | Generate a tag-based description of an image |
 
+## UI Widget
+
+The app includes an interactive **Image Analysis Viewer** widget that:
+- Displays the analyzed image with **bounding box overlays** for detected objects and people
+- Shows **tags** with confidence bars
+- Highlights **OCR text regions** on the image
+- Renders **descriptions** alongside the source image
+
+The widget is served as an MCP resource and automatically appears in MCP clients that support app UIs.
+
 ## Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Azure Functions Core Tools v4](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
+- [Node.js 18+](https://nodejs.org/) (for building the UI widget)
 - [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) (for deployment)
 - [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) (for local storage emulation)
 - An [Azure AI Vision](https://learn.microsoft.com/azure/ai-services/computer-vision/overview) resource
@@ -74,6 +85,10 @@ azurite --silent
 ### 4. Build and run
 
 ```bash
+# Build the UI widget (produces app/dist/index.html, bundled into function output at build time)
+cd app && npm install && npm run build && cd ..
+
+# Start the function app
 func start
 ```
 
@@ -184,12 +199,19 @@ azd down
 AzureAIVision/
 ├── Program.cs                # Host setup with DI for ImageAnalysisClient
 ├── VisionTools.cs            # MCP tool functions (analyze, OCR, describe)
+├── VisionResources.cs        # MCP resource serving the UI widget
 ├── AnalyzeImageInput.cs      # POCO for analyze_image tool
 ├── ReadTextInput.cs          # POCO for read_text tool
 ├── DescribeImageInput.cs     # POCO for describe_image tool
 ├── AzureAIVision.csproj      # Project file with MCP + Vision SDK references
 ├── host.json                 # Functions host configuration
-└── local.settings.sample.json # Sample local settings (copy to local.settings.json)
+├── local.settings.sample.json # Sample local settings (copy to local.settings.json)
+└── app/                      # Vite + TypeScript UI
+    ├── src/vision-app.ts     # Image analysis viewer with bounding box overlays
+    ├── index.html            # HTML template with styles
+    ├── package.json          # Node dependencies
+    ├── vite.config.ts        # Vite config (singlefile plugin)
+    └── dist/index.html       # Built output (bundled single file)
 ```
 
 ## Files
@@ -199,6 +221,7 @@ AzureAIVision/
 | `AzureAIVision.csproj` | Project file with MCP extension + Azure AI Vision SDK references |
 | `Program.cs` | Host startup with `ImageAnalysisClient` DI registration |
 | `VisionTools.cs` | MCP tool implementations using `ImageAnalysisClient` |
+| `VisionResources.cs` | MCP resource serving the UI widget |
 | `host.json` | Functions host config with MCP extension section |
 | `local.settings.sample.json` | Sample local settings (copy to `local.settings.json`) |
 | `azure.yaml` | Azure Developer CLI deployment config |

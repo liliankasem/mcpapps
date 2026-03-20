@@ -27,4 +27,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="app\dist\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

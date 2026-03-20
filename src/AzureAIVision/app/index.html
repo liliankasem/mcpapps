@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Vision</title>
+  <style>
+    :root {
+      --bg-primary: #0a1628;
+      --bg-secondary: #111d33;
+      --bg-card: #162340;
+      --text-primary: #e8edf5;
+      --text-secondary: #8899b5;
+      --accent: #0078d4;
+      --accent-light: #3a9aed;
+      --success: #2ea043;
+      --error: #d93025;
+      --border: #243656;
+      --tag-bg: rgba(0, 120, 212, 0.15);
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f0f4f8;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --text-primary: #1a2233;
+      --text-secondary: #4a5568;
+      --accent: #0078d4;
+      --accent-light: #2b88d8;
+      --border: #d0d7e0;
+      --tag-bg: rgba(0, 120, 212, 0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, #002050 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px;
+    }
+
+    [data-theme="light"] body {
+      background: linear-gradient(135deg, var(--bg-primary) 0%, #d6e4f0 100%);
+    }
+
+    .widget {
+      width: 100%;
+      max-width: 640px;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .icon { font-size: 28px; line-height: 1; }
+    .title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    .content-area {
+      padding: 16px 20px;
+      min-height: 80px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .image-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .image-container img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .image-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .box-tooltip {
+      position: absolute;
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin: 14px 0 8px;
+    }
+
+    .section-label:first-child {
+      margin-top: 0;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .tag-name { color: var(--text-primary); font-weight: 500; }
+
+    .tag-confidence {
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .confidence-bar-bg {
+      width: 32px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .confidence-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    .ocr-text {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .description-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      padding: 8px 0;
+    }
+
+    .loading {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 13px;
+      padding: 24px 0;
+    }
+
+    .error-card {
+      background: rgba(217, 48, 37, 0.08);
+      border: 1px solid var(--error);
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: var(--error);
+      font-size: 13px;
+    }
+
+    .footer {
+      padding: 10px 20px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget">
+    <div class="header" id="header-area">
+      <div class="icon" id="vision-icon">👁️</div>
+      <div>
+        <p class="title" id="title">AI Vision</p>
+        <p class="subtitle" id="subtitle">Waiting for tool output…</p>
+      </div>
+    </div>
+    <div id="content-area" class="content-area">
+    </div>
+    <div class="footer" id="footer">Connecting...</div>
+  </div>
+  <script type="module" src="/src/vision-app.ts"></script>
+</body>
+</html>

@@ -8,17 +8,43 @@ namespace AzureAIVision;
 internal class VisionTools
 {
     private readonly ImageAnalysisClient _client;
+    private static readonly HttpClient _httpClient = new();
 
     public VisionTools(ImageAnalysisClient client)
     {
         _client = client;
     }
 
-    [Function(nameof(AnalyzeImage))]
+    private const string ToolMetadata = """
+        {
+            "ui": {
+                "resourceUri": "ui://azureaivision/index.html"
+            }
+        }
+        """;
+
+    private static async Task<string?> FetchImageAsDataUri(string imageUrl)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync(imageUrl);
+            response.EnsureSuccessStatusCode();
+            var contentType = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            return $"data:{contentType};base64,{Convert.ToBase64String(bytes)}";
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    [Function("analyze_image")]
     public async Task<string> AnalyzeImage(
         [McpToolTrigger("analyze_image",
             "Analyze an image to detect objects, tags, and people. " +
             "By default all features are included; set individual flags to false to exclude them.")]
+        [McpMetadata(ToolMetadata)]
         AnalyzeImageInput input,
         ToolInvocationContext context)
     {
@@ -37,8 +63,15 @@ internal class VisionTools
         }
 
         var result = await _client.AnalyzeAsync(new Uri(input.ImageUrl), features);
+        var imageDataUri = await FetchImageAsDataUri(input.ImageUrl);
 
-        var response = new Dictionary<string, object>();
+        var response = new Dictionary<string, object>
+        {
+            ["imageUrl"] = input.ImageUrl
+        };
+
+        if (imageDataUri is not null)
+            response["imageData"] = imageDataUri;
 
         if (includeTags && result.Value.Tags is { Values: { } tags })
         {
@@ -83,9 +116,10 @@ internal class VisionTools
         return JsonSerializer.Serialize(response);
     }
 
-    [Function(nameof(ReadText))]
+    [Function("read_text")]
     public async Task<string> ReadText(
         [McpToolTrigger("read_text", "Extract text from an image using OCR (optical character recognition)")]
+        [McpMetadata(ToolMetadata)]
         ReadTextInput input,
         ToolInvocationContext context)
     {
@@ -93,7 +127,8 @@ internal class VisionTools
 
         if (result.Value.Read is not { Blocks: { } blocks } || blocks.Count == 0)
         {
-            return JsonSerializer.Serialize(new { text = "", message = "No text detected in the image." });
+            var imageDataUriEmpty = await FetchImageAsDataUri(input.ImageUrl);
+            return JsonSerializer.Serialize(new { imageUrl = input.ImageUrl, imageData = imageDataUriEmpty, text = "", message = "No text detected in the image." });
         }
 
         var lines = blocks
@@ -106,13 +141,15 @@ internal class VisionTools
             .ToList();
 
         var fullText = string.Join("\n", blocks.SelectMany(b => b.Lines).Select(l => l.Text));
+        var imageDataUri2 = await FetchImageAsDataUri(input.ImageUrl);
 
-        return JsonSerializer.Serialize(new { text = fullText, lines });
+        return JsonSerializer.Serialize(new { imageUrl = input.ImageUrl, imageData = imageDataUri2, text = fullText, lines });
     }
 
-    [Function(nameof(DescribeImage))]
+    [Function("describe_image")]
     public async Task<string> DescribeImage(
         [McpToolTrigger("describe_image", "Generate a natural language description (caption) of an image")]
+        [McpMetadata(ToolMetadata)]
         DescribeImageInput input,
         ToolInvocationContext context)
     {
@@ -120,7 +157,14 @@ internal class VisionTools
             new Uri(input.ImageUrl),
             VisualFeatures.Tags);
 
-        var response = new Dictionary<string, object>();
+        var response = new Dictionary<string, object>
+        {
+            ["imageUrl"] = input.ImageUrl
+        };
+
+        var imageDataUri3 = await FetchImageAsDataUri(input.ImageUrl);
+        if (imageDataUri3 is not null)
+            response["imageData"] = imageDataUri3;
 
         if (result.Value.Tags is { Values: { } tags })
         {
